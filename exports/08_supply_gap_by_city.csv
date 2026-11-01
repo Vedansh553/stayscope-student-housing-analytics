@@ -1,0 +1,11 @@
+city,units,leads_2025,leads_per_unit,visited_not_booked_pct,pressure_rank
+Sydney,103,895,8.69,74.6,1
+Toronto,233,760,3.26,64.7,2
+London,275,869,3.16,65.5,3
+Dublin,154,481,3.12,66.8,4
+New York,197,611,3.1,62.4,5
+Melbourne,222,663,2.99,69.2,6
+Bengaluru,251,671,2.67,63.7,7
+Delhi,311,805,2.59,67.4,8
+Manchester,215,523,2.43,62.3,9
+Pune,219,514,2.35,61.9,10

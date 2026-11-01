@@ -1,0 +1,4 @@
+distance_band,reviews,avg_rating,low_rating_pct
+1. < 2 km,410,4.19,0.7
+2. 2-5 km,355,4.03,3.1
+3. 5+ km,81,3.85,4.9

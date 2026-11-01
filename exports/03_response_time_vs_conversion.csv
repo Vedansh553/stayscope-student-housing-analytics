@@ -1,0 +1,6 @@
+response_bucket,leads,visit_rate_pct,booking_rate_pct,share_of_leads_pct
+1. <= 1h,330,60.9,27.0,1.6
+2. 1-6h,6402,57.0,22.9,30.5
+3. 6-24h,9657,48.5,14.8,46.0
+4. > 24h,3159,30.3,5.8,15.0
+5. No response,1452,3.3,0.3,6.9

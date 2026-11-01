@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StayScope – Student Housing Analytics</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#1c2430;--mute:#6a7482;--line:#e3e6eb;--c1:#1f6f8b;--c2:#e07a1f;--c3:#8ab6c7;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161c;--card:#1b212a;--text:#e8ecf1;--mute:#94a0ae;--line:#2b3340;--c1:#5fb3d0;--c2:#f0a050;--c3:#3f6f82}}
+:root[data-theme="dark"]{--bg:#12161c;--card:#1b212a;--text:#e8ecf1;--mute:#94a0ae;--line:#2b3340;--c1:#5fb3d0;--c2:#f0a050;--c3:#3f6f82}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:16px}
+h1{font-size:20px;margin:0}.sub{color:var(--mute);font-size:12px;margin:2px 0 14px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+select,button{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font:inherit}
+button{cursor:pointer}.badge{background:var(--c2);color:#fff;border-radius:99px;padding:2px 9px;font-size:11px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.k .l{color:var(--mute);font-size:12px}.k .v{font-size:22px;font-weight:650}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px}
+.card h2{font-size:13px;margin:0 0 2px}.card p{margin:0 0 8px;color:var(--mute);font-size:11px}
+.cv{position:relative;height:230px}.note{color:var(--mute);font-size:11px;margin-top:14px}
+#ins{margin-bottom:14px;font-size:13px}
+</style></head><body>
+<h1>StayScope <span class="badge">synthetic data</span></h1>
+<div class="sub">Student-housing marketplace analytics · click a city bar to filter</div>
+<div class="bar">
+ <label>City <select id="city"></select></label>
+ <label>Year <select id="year"><option>All</option><option>2023</option><option>2024</option><option>2025</option></select></label>
+ <button id="reset">Reset</button>
+</div>
+<div class="kpis" id="kpis"></div>
+<div class="card" id="ins"></div>
+<div class="grid">
+ <div class="card"><h2>Monthly GMV (USD)</h2><p>Confirmed + completed bookings, by booking month</p><div class="cv"><canvas id="c1"></canvas></div></div>
+ <div class="card"><h2>Lead → booking conversion by city</h2><p>Click a bar to filter the dashboard</p><div class="cv"><canvas id="c2"></canvas></div></div>
+ <div class="card"><h2>Reply speed vs outcomes</h2><p>Visit and booking rate by first-response time</p><div class="cv"><canvas id="c3"></canvas></div></div>
+ <div class="card"><h2>Leads per unit (annualised)</h2><p>Higher = tighter supply · click to filter</p><div class="cv"><canvas id="c4"></canvas></div></div>
+ <div class="card"><h2>Cancellation rate by lead source</h2><p>Share of bookings cancelled</p><div class="cv"><canvas id="c5"></canvas></div></div>
+ <div class="card"><h2>First-try payment failure by method</h2><p>Share of first attempts that failed</p><div class="cv"><canvas id="c6"></canvas></div></div>
+ <div class="card"><h2>Occupancy (2024–2025)</h2><p>Occupied units ÷ total units</p><div class="cv"><canvas id="c7"></canvas></div></div>
+</div>
+<div class="note">Lead metrics use the lead’s creation month; booking and GMV metrics use the booking month. Dec 2025 is excluded because it is a partial month. All figures come from a seeded synthetic dataset, not real company data.</div>
+<script>
+const D=__DATA__;let S={city:'All',year:'All'};
+const $=id=>document.getElementById(id),sum=(a,i)=>a.reduce((s,r)=>s+r[i],0);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fm=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+(n/1e3).toFixed(0)+'K':'$'+Math.round(n);
+const pc=(a,b)=>b?100*a/b:0,yr=m=>m.slice(0,4);
+const okY=y=>S.year==='All'||String(y)===S.year,okC=c=>S.city==='All'||c===S.city;
+$('city').innerHTML=['All',...D.cities].map(c=>`<option>${c}</option>`).join('');
+let ch={};
+function mk(id,type,opt){const c=new Chart($(id),{type,data:{labels:[],datasets:[]},options:Object.assign({responsive:true,maintainAspectRatio:false,animation:{duration:250},plugins:{legend:{display:false}}},opt||{})});ch[id]=c;return c}
+function put(id,labels,sets,fmt){const c=ch[id];c.data.labels=labels;c.data.datasets=sets;
+ const t=css('--mute'),g=css('--line');
+ for(const k in c.options.scales||{}){const s=c.options.scales[k];s.ticks={color:t,callback:k==='y'&&fmt?fmt:undefined};s.grid={color:g}}
+ c.options.plugins.legend={display:sets.length>1,labels:{color:t}};c.update()}
+const ax=()=>({x:{},y:{beginAtZero:true}});
+function hl(labels,base,on){return labels.map(l=>S.city!=='All'&&l!==S.city?css('--c3'):base)}
+const pick=(e,c,list)=>{const p=c.getElementsAtEventForMode(e,'nearest',{intersect:true},true);if(p.length){$('city').value=S.city=list[p[0].index];draw()}};
+function draw(){
+ const cm=D.cm.filter(r=>okC(r[0])&&okY(yr(r[1])));
+ const gmv=sum(cm,6),ret=sum(cm,5),canc=sum(cm,7),leads=sum(cm,2),conv=sum(cm,4);
+ $('kpis').innerHTML=[['GMV',fm(gmv)],['Retained bookings',ret.toLocaleString()],['Avg booking value',ret?'$'+Math.round(gmv/ret).toLocaleString():'–'],
+  ['Lead → booking',pc(conv,leads).toFixed(1)+'%'],['Cancel rate',pc(canc,ret+canc).toFixed(1)+'%']]
+  .map(([l,v])=>`<div class="card k"><div class="l">${l}</div><div class="v">${v}</div></div>`).join('');
+ // monthly GMV
+ const mm={};cm.forEach(r=>mm[r[1]]=(mm[r[1]]||0)+r[6]);const ms=Object.keys(mm).sort();
+ put('c1',ms,[{type:'line',data:ms.map(m=>mm[m]),borderColor:css('--c1'),backgroundColor:css('--c1')+'33',fill:true,tension:.25,pointRadius:0}],v=>fm(v));
+ // funnel by city (respects year only)
+ const fc=D.cities.map(c=>{const r=D.cm.filter(x=>x[0]===c&&okY(yr(x[1])));return[c,pc(sum(r,4),sum(r,2))]}).sort((a,b)=>b[1]-a[1]);
+ const fl=fc.map(x=>x[0]);put('c2',fl,[{data:fc.map(x=>+x[1].toFixed(1)),backgroundColor:hl(fl,css('--c1'))}],v=>v+'%');ch.c2._l=fl;
+ // response
+ const B=['≤ 1h','1–6h','6–24h','> 24h','No reply'],cr=D.cr.filter(r=>okC(r[0])&&okY(r[1]));
+ const rb=B.map(b=>{const r=cr.filter(x=>x[2]===b);return[pc(sum(r,4),sum(r,3)),pc(sum(r,5),sum(r,3))]});
+ put('c3',B,[{label:'Visit rate',data:rb.map(x=>+x[0].toFixed(1)),backgroundColor:css('--c3')},{label:'Booking rate',data:rb.map(x=>+x[1].toFixed(1)),backgroundColor:css('--c2')}],v=>v+'%');
+ // supply
+ const nm=new Set(D.cm.filter(r=>okY(yr(r[1]))).map(r=>r[1])).size||1;
+ const sc=D.cities.map(c=>{const l=sum(D.cm.filter(x=>x[0]===c&&okY(yr(x[1]))),2);return[c,l/D.units[c]/(nm/12)]}).sort((a,b)=>b[1]-a[1]);
+ const sl=sc.map(x=>x[0]);put('c4',sl,[{data:sc.map(x=>+x[1].toFixed(2)),backgroundColor:hl(sl,css('--c2'))}]);ch.c4._l=sl;
+ // sources
+ const SO=['Aggregator','Paid Search','Organic','Social','Referral'],cs=D.cs.filter(r=>okC(r[0])&&okY(r[1]));
+ const sr=SO.map(s=>{const r=cs.filter(x=>x[2]===s);return pc(sum(r,4),sum(r,3))});
+ put('c5',SO,[{data:sr.map(v=>+v.toFixed(1)),backgroundColor:css('--c2')}],v=>v+'%');
+ // payments
+ const ME=['Bank Transfer','Wallet','Card','UPI'],cp=D.cp.filter(r=>okC(r[0])&&okY(r[1]));
+ const pr=ME.map(s=>{const r=cp.filter(x=>x[2]===s);return pc(sum(r,4),sum(r,3))});
+ put('c6',ME,[{data:pr.map(v=>+v.toFixed(1)),backgroundColor:css('--c1')}],v=>v+'%');
+ // occupancy
+ const oc=cm.filter(r=>r[8]!==null),om={};oc.forEach(r=>{(om[r[1]]=om[r[1]]||[0,0]);om[r[1]][0]+=r[8];om[r[1]][1]+=r[9]});
+ const os=Object.keys(om).sort();
+ put('c7',os,[{type:'line',data:os.map(m=>+pc(om[m][0],om[m][1]).toFixed(1)),borderColor:css('--c2'),pointRadius:0,tension:.25}],v=>v+'%');
+ // insight
+ const wS=SO[sr.indexOf(Math.max(...sr))],wP=ME[pr.indexOf(Math.max(...pr))];
+ $('ins').innerHTML=`<b>${S.city==='All'?'All cities':S.city} · ${S.year==='All'?'2023–2025':S.year}:</b> highest cancellations come from <b>${wS}</b> (${Math.max(...sr).toFixed(1)}%); weakest payment method is <b>${wP}</b> (${Math.max(...pr).toFixed(1)}% first-try failures).`;
+}
+mk('c1','bar',{scales:ax()});mk('c2','bar',{scales:ax(),onClick:(e,_,c)=>pick(e,c,c._l)});
+mk('c3','bar',{scales:ax()});mk('c4','bar',{scales:ax(),onClick:(e,_,c)=>pick(e,c,c._l)});
+mk('c5','bar',{scales:ax()});mk('c6','bar',{scales:ax()});mk('c7','line',{scales:ax()});
+$('city').onchange=e=>{S.city=e.target.value;draw()};$('year').onchange=e=>{S.year=e.target.value;draw()};
+$('reset').onclick=()=>{S={city:'All',year:'All'};$('city').value='All';$('year').value='All';draw()};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+draw();
+</script></body></html>

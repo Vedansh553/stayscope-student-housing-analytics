@@ -1,0 +1,5 @@
+method,first_attempts,first_try_failures,first_try_fail_pct,recovered_on_retry,retry_recovery_pct
+Bank Transfer,712,115,16.2,111,96.5
+Wallet,678,64,9.4,63,98.4
+Card,1398,82,5.9,78,95.1
+UPI,381,15,3.9,15,100.0

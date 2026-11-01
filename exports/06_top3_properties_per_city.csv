@@ -1,0 +1,31 @@
+city,rank_in_city,property_id,property_type,distance_km,bookings,gmv_usd
+Bengaluru,1,353,Apartment,5.64,14,35975.0
+Bengaluru,2,360,Apartment,2.29,9,30620.0
+Bengaluru,3,374,Apartment,1.98,8,24689.0
+Delhi,1,318,Private Room,0.53,13,33104.0
+Delhi,2,326,Studio,0.23,11,32899.0
+Delhi,3,282,Apartment,1.17,7,29756.0
+Dublin,1,214,Apartment,1.07,11,165578.0
+Dublin,2,218,Apartment,1.53,10,160497.0
+Dublin,3,211,Apartment,2.8,10,147646.0
+London,1,36,Apartment,0.98,11,203073.0
+London,2,6,Studio,1.3,11,163824.0
+London,3,38,Apartment,2.51,10,162058.0
+Manchester,1,63,Studio,0.42,12,123280.0
+Manchester,2,70,Apartment,1.25,10,119653.0
+Manchester,3,76,Apartment,0.2,6,84714.0
+Melbourne,1,114,Apartment,1.72,11,167106.0
+Melbourne,2,100,Apartment,2.33,10,151526.0
+Melbourne,3,124,Apartment,2.15,11,146760.0
+New York,1,250,Studio,0.63,13,287744.0
+New York,2,246,Apartment,0.97,10,267217.0
+New York,3,243,Studio,0.44,12,255645.0
+Pune,1,393,Apartment,1.36,9,23821.0
+Pune,2,411,Apartment,5.99,10,23542.0
+Pune,3,427,Apartment,1.47,8,22071.0
+Sydney,1,162,Apartment,1.64,22,353923.0
+Sydney,2,150,Studio,0.81,24,351309.0
+Sydney,3,149,Apartment,1.79,20,311824.0
+Toronto,1,170,Studio,1.06,12,143980.0
+Toronto,2,191,Studio,0.37,10,132110.0
+Toronto,3,167,Apartment,6.84,10,121481.0
